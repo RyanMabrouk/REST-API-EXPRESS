@@ -16,7 +16,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"{{email}}\",\n    \"password\": \"{{password}}\",\n    \"passwordConfirmation\": \"{{password}}\",\n    \"name\": \"{{name}}\"\n}",
+							"raw": "{\n    \"email\": \"rayesd3d@rdayffvfeffdffdss.com\",\n    \"password\": \"{{password}}\",\n    \"passwordConfirmation\": \"{{password}}\",\n    \"name\": \"{{name}}\",\n    \"birthdate\": \"1900-01-02\",\n    \"bio\": \"Hello, world!\",\n    \"avatar\": \"https://example.com/avatar.jpg\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -24,13 +24,84 @@
 							}
 						},
 						"url": {
-							"raw": "{{endpoint}}/api/users",
+							"raw": "{{endpoint}}/api/user",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all users",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-refresh",
+								"value": "{{refreshToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint}}/api/users?page=1&limit=5",
 							"host": [
 								"{{endpoint}}"
 							],
 							"path": [
 								"api",
 								"users"
+							],
+							"query": [
+								{
+									"key": "email",
+									"value": "test@example.com",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "5"
+								},
+								{
+									"key": "_id",
+									"value": "65e5df7a90fa6bc5573b966b",
+									"disabled": true
+								},
+								{
+									"key": "verified",
+									"value": "false",
+									"disabled": true
+								}
 							]
 						}
 					},
@@ -40,13 +111,38 @@
 					"name": "Create Session",
 					"event": [
 						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"var jsonData = JSON.parse(responseBody);",
-									"console.log(jsonData)",
-									"postman.setEnvironmentVariable(\"accessToken\", jsonData.accessToken);",
-									"postman.setEnvironmentVariable(\"refreshToken\", jsonData.refreshToken);"
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response content type is JSON\", function () {",
+									"    pm.response.to.have.header('Content-Type', 'application/json; charset=utf-8');",
+									"});",
+									"",
+									"pm.test(\"Access token and refresh token are present in the response\", function () {",
+									"    pm.expect(pm.response.json()).to.have.property('accessToken');",
+									"    pm.expect(pm.response.json()).to.have.property('refreshToken');",
+									"});",
+									"",
+									"// Stores the accessToken and refreshToken in collection variables",
+									"pm.collectionVariables.set(\"accessToken\", pm.response.json().accessToken);",
+									"pm.collectionVariables.set(\"refreshToken\", pm.response.json().refreshToken);",
+									"pm.test(\"Environment variables are set correctly\", function () {",
+									"    pm.expect(pm.collectionVariables.get(\"accessToken\")).to.be.a('string');",
+									"    pm.expect(pm.collectionVariables.get(\"refreshToken\")).to.be.a('string');",
+									"});"
 								],
 								"type": "text/javascript"
 							}
@@ -54,7 +150,13 @@
 					],
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "x-refresh",
+								"value": "{{refreshToken}}",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
 							"raw": "{\n    \"email\": \"{{email}}\",\n    \"password\": \"{{password}}\"\n}",
@@ -65,34 +167,110 @@
 							}
 						},
 						"url": {
-							"raw": "{{endpoint}}/api/sessions",
+							"raw": "{{endpoint}}/api/session",
 							"host": [
 								"{{endpoint}}"
 							],
 							"path": [
 								"api",
-								"sessions"
+								"session"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Get Sessions",
+					"name": "Get Session",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
 									"",
-									"const newAccessToken = responseHeaders['x-access-token']",
+									"const newAccessToken = pm.response.headers.get('x-access-token');",
 									"",
 									"if(newAccessToken){",
-									"    console.log('Set new access token')",
-									"postman.setEnvironmentVariable(\"accessToken\", newAccessToken);",
+									"    console.log('Set new access token');",
+									"    pm.collectionVariables.set(\"accessToken\", newAccessToken);",
 									"}",
 									"",
+									"pm.test(\"Response status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"",
 									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-refresh",
+								"value": "{{refreshToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{endpoint}}/api/session",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"session"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Sessions",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"const newAccessToken = pm.response.headers.get('x-access-token');",
+									"",
+									"if(newAccessToken){",
+									"    console.log('Set new access token');",
+									"    pm.collectionVariables.set(\"accessToken\", newAccessToken);",
+									"}",
+									"",
+									"pm.test(\"Response status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is an array\", function () {",
+									"    pm.expect(pm.response.json()).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Each element in the array has required properties\", function () {",
+									"    pm.response.json().forEach(function(session) {",
+									"        pm.expect(session).to.have.property('_id');",
+									"        pm.expect(session).to.have.property('user');",
+									"        pm.expect(session).to.have.property('valid');",
+									"        pm.expect(session).to.have.property('userAgent');",
+									"        pm.expect(session).to.have.property('createdAt');",
+									"        pm.expect(session).to.have.property('updatedAt');",
+									"        pm.expect(session).to.have.property('__v');",
+									"    });",
+									"});"
 								],
 								"type": "text/javascript"
 							}
@@ -137,13 +315,127 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"const newAccessToken = responseHeaders['x-access-token']",
+									"const newAccessToken = pm.response.headers.get('x-access-token');",
 									"",
 									"if(newAccessToken){",
-									"    console.log('Set new access token')",
-									"postman.setEnvironmentVariable(\"accessToken\", newAccessToken);",
+									"    console.log('Set new access token');",
+									"    pm.collectionVariables.set(\"accessToken\", newAccessToken);",
 									"}",
 									"",
+									"",
+									"pm.test(\"Response status code is 200\", function () {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Content type is application/json\", function () {",
+									"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");",
+									"});",
+									"",
+									"",
+									"pm.test(\"Both accessToken and refreshToken should be null\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData.accessToken).to.be.null;",
+									"    pm.expect(responseData.refreshToken).to.be.null;",
+									"});",
+									"",
+									"",
+									"pm.test(\"Check if the new access token is being set correctly in the collection variables\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData.accessToken).to.be.null;",
+									"    pm.expect(responseData.refreshToken).to.be.null;",
+									"});",
+									"",
+									"",
+									"pm.test(\"Ensure that the response does not contain any unexpected fields\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData).to.not.include.any.keys('unexpectedField1', 'unexpectedField2');",
+									"});",
+									"",
+									"pm.collectionVariables.set(\"accessToken\",pm.response.json().accessToken)",
+									"pm.collectionVariables.set(\"refreshToken\",pm.response.json().refreshToken)",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "x-refresh",
+								"value": "{{refreshToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{endpoint}}/api/session",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"session"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete All Sessions",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const newAccessToken = pm.response.headers.get('x-access-token');",
+									"",
+									"if(newAccessToken){",
+									"    console.log('Set new access token');",
+									"    pm.collectionVariables.set(\"accessToken\", newAccessToken);",
+									"}",
+									"",
+									"pm.test(\"Response status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response has the required fields - accessToken and refreshToken\", function () {",
+									"    pm.expect(pm.response.json()).to.have.property('accessToken').that.is.null;",
+									"    pm.expect(pm.response.json()).to.have.property('refreshToken').that.is.null;",
+									"});",
+									"",
+									"",
+									"pm.test(\"Content-Type header is application/json\", function () {",
+									"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response body is not empty\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.not.be.empty;",
+									"});",
+									"",
+									"pm.collectionVariables.set(\"accessToken\",pm.response.json().accessToken)",
+									"pm.collectionVariables.set(\"refreshToken\",pm.response.json().refreshToken)",
 									""
 								],
 								"type": "text/javascript"
@@ -181,37 +473,55 @@
 						}
 					},
 					"response": []
-				},
-				{
-					"name": "Delete All Sessions",
-					"request": {
-						"method": "GET",
-						"header": []
-					},
-					"response": []
 				}
 			]
 		},
 		{
-			"name": "Product",
+			"name": "Offers",
 			"item": [
 				{
-					"name": "Create Product",
+					"name": "Create Offer",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"var jsonData = JSON.parse(responseBody);",
-									"postman.setEnvironmentVariable(\"productId\", jsonData.productId);",
+									"try {",
+									"    var jsonData = JSON.parse(responseBody);",
+									"    if(jsonData){",
+									"        pm.collectionVariables.set(\"offerId\", jsonData.data.offerId);",
+									"    }",
+									"} catch (e) {",
+									"    console.error(\"Parsing error: \", e);",
+									"}",
 									"",
 									"",
-									"const newAccessToken = responseHeaders['x-access-token']",
+									"const newAccessToken = pm.response.headers.get('x-access-token');",
 									"",
 									"if(newAccessToken){",
-									"    console.log('Set new access token')",
-									"postman.setEnvironmentVariable(\"accessToken\", newAccessToken);",
-									"}"
+									"    console.log('Set new access token');",
+									"    pm.collectionVariables.set(\"accessToken\", newAccessToken);",
+									"}",
+									"",
+									"pm.test(\"Response status code is 200\", function () {",
+									"  pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"",
+									"",
+									"",
+									"pm.test(\"Price is a non-negative number\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData.price).to.be.a('number').and.to.be.at.least(0);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Verify accessToken is set in the environment variable if it exists\", function () {",
+									"    pm.expect(pm.collectionVariables.get(\"accessToken\")).to.exist;",
+									"});",
+									"",
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -238,7 +548,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"title\": \"Canon EOS 1500D DSLR Camera with 18-55mm Lens\",\n    \"description\": \"Designed for first-time DSLR owners who want impressive results straight out of the box, capture those magic moments no matter your level with the EOS 1500D. With easy to use automatic shooting modes, large 24.1 MP sensor, Canon Camera Connect app integration and built-in feature guide, EOS 1500D is always ready to go.\",\n    \"price\": 879.99,\n    \"image\": \"https://i.imgur.com/QlRphfQ.jpg\"\n}",
+							"raw": "{\n    \"title\": \"Tesla inc\",\n    \"description\": \"Designed for first-time DSLR owners who want impressive results straight out of the box, capture those magic moments no matter your level with the EOS 1500D. With easy to use automatic shooting modes, large 24.1 MP sensor, Canon Camera Connect app integration and built-in feature guide, EOS 1500D is always ready to go.\",\n    \"price\": 879.99,\n    \"tel\":\"+21629701532\",\n    \"email\":\"test@test.com\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -246,26 +556,31 @@
 							}
 						},
 						"url": {
-							"raw": "{{endpoint}}/api/products",
+							"raw": "{{endpoint}}/api/offers",
 							"host": [
 								"{{endpoint}}"
 							],
 							"path": [
 								"api",
-								"products"
+								"offers"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Get Product",
+					"name": "Get Offer",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									""
+									"const newAccessToken = pm.response.headers.get('x-access-token');",
+									"",
+									"if(newAccessToken){",
+									"    console.log('Set new access token');",
+									"    pm.collectionVariables.set(\"accessToken\", newAccessToken);",
+									"}"
 								],
 								"type": "text/javascript"
 							}
@@ -276,10 +591,16 @@
 					},
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "x-refresh",
+								"value": "{{refreshToken}}",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"title\": \"A post title\",\n    \"body\": \"Some HTML text Some HTML text Some HTML text Some HTML text Some HTML text Some HTML text Some HTML text Some HTML text Some HTML text Some HTML text Some HTML text Some HTML text Some HTML text Some HTML text\"\n}",
+							"raw": "",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -287,21 +608,371 @@
 							}
 						},
 						"url": {
-							"raw": "{{endpoint}}/api/products/{{productId}}",
+							"raw": "{{endpoint}}/api/offers/{{offerId}}",
 							"host": [
 								"{{endpoint}}"
 							],
 							"path": [
 								"api",
-								"products",
-								"{{productId}}"
+								"offers",
+								"{{offerId}}"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Update Product",
+					"name": "Get All Offers",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const newAccessToken = pm.response.headers.get('x-access-token');",
+									"",
+									"if(newAccessToken){",
+									"    console.log('Set new access token');",
+									"    pm.collectionVariables.set(\"accessToken\", newAccessToken);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-refresh",
+								"value": "{{refreshToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint}}/api/offers",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"offers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Offer",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const newAccessToken = pm.response.headers.get('x-access-token');",
+									"",
+									"if(newAccessToken){",
+									"    console.log('Set new access token');",
+									"    pm.collectionVariables.set(\"accessToken\", newAccessToken);",
+									"}",
+									"",
+									"pm.test(\"Response status code is 200\", function () {",
+									"  pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Id must be a non-empty string\", function () {",
+									"  const responseData = pm.response.json();",
+									"  ",
+									"  pm.expect(responseData).to.be.an('object');",
+									"  pm.expect(responseData._id).to.be.a('string').and.to.have.lengthOf.at.least(1, \"Id should be a non-empty string\");",
+									"});",
+									"",
+									"",
+									"pm.test(\"Price should be a non-negative number\", function () {",
+									"  const responseData = pm.response.json();",
+									"  ",
+									"  pm.expect(responseData).to.be.an('object');",
+									"  pm.expect(responseData.price).to.be.a('number');",
+									"  pm.expect(responseData.price).to.be.at.least(0, \"Price should be a non-negative number\");",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "x-refresh",
+								"value": "{{refreshToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Tesla inc\",\n    \"description\": \"Designed for first-time DSLR owners who want impressive results straight out of the box, capture those magic moments no matter your level with the EOS 1500D. With easy to use automatic shooting modes, large 24.1 MP sensor, Canon Camera Connect app integration and built-in feature guide, EOS 1500D is always ready to go.\",\n    \"price\": 879.99,\n    \"tel\":\"+21629701532\",\n    \"email\":\"test@test.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint}}/api/offers/{{offerId}}",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"offers",
+								"{{offerId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Offer",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const newAccessToken = pm.response.headers.get('x-access-token');",
+									"",
+									"if(newAccessToken){",
+									"    console.log('Set new access token');",
+									"    pm.collectionVariables.set(\"accessToken\", newAccessToken);",
+									"}",
+									"pm.test(\"Response status code is 200\", function () {",
+									"  pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "x-refresh",
+								"value": "{{refreshToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint}}/api/offers/{{offerId}}",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"offers",
+								"{{offerId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Notifications",
+			"item": [
+				{
+					"name": "Create Notification",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"try {",
+									"    var jsonData = JSON.parse(responseBody);",
+									"    if(jsonData){",
+									"        pm.collectionVariables.set(\"notificationId\", jsonData.data.notificationId);",
+									"    }",
+									"} catch (e) {",
+									"    console.error(\"Parsing error: \", e);",
+									"}",
+									"",
+									"",
+									"const newAccessToken = pm.response.headers.get('x-access-token');",
+									"",
+									"if(newAccessToken){",
+									"    console.log('Set new access token');",
+									"    pm.collectionVariables.set(\"accessToken\", newAccessToken);",
+									"}",
+									"",
+									"",
+									"",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-refresh",
+								"value": "{{refreshToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user\":\"11\",\n    \"description\": \"Designed for first-time DSLR owners who want impressive results straight out of the box, capture those magic moments no matter your level with the EOS 1500D. With easy to use automatic shooting modes, large 24.1 MP sensor, Canon Camera Connect app integration and built-in feature guide, EOS 1500D is always ready to go.\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint}}/api/notifications",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"notifications"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Notification",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const newAccessToken = pm.response.headers.get('x-access-token');",
+									"",
+									"if(newAccessToken){",
+									"    console.log('Set new access token');",
+									"    pm.collectionVariables.set(\"accessToken\", newAccessToken);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-refresh",
+								"value": "{{refreshToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint}}/api/notifications",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"notifications"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Notification",
 					"event": [
 						{
 							"listen": "test",
@@ -339,7 +1010,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"title\": \"Canon EOS 1500D DSLR Camera with 18-55mm Lens\",\n    \"description\": \"Designed for first-time DSLR owners who want impressive results straight out of the box, capture those magic moments no matter your level with the EOS 1500D. With easy to use automatic shooting modes, large 24.1 MP sensor, Canon Camera Connect app integration and built-in feature guide, EOS 1500D is always ready to go.\",\n    \"price\": 699.99,\n    \"image\": \"https://i.imgur.com/QlRphfQ.jpg\"\n}",
+							"raw": "{\n    \"user\":\"65e5df7a90fa6bc5573b966b\",\n    \"description\": \"Designeduilt-in feature guide, EOS 1500D is always ready to go.\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -347,32 +1018,36 @@
 							}
 						},
 						"url": {
-							"raw": "{{endpoint}}/api/products/{{productId}}",
+							"raw": "{{endpoint}}/api/notifications/{{notificationId}}",
 							"host": [
 								"{{endpoint}}"
 							],
 							"path": [
 								"api",
-								"products",
-								"{{productId}}"
+								"notifications",
+								"{{notificationId}}"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Delete Product",
+					"name": "Delete Notification",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"const newAccessToken = responseHeaders['x-access-token']",
+									"const newAccessToken = pm.response.headers.get('x-access-token');",
 									"",
 									"if(newAccessToken){",
-									"    console.log('Set new access token')",
-									"postman.setEnvironmentVariable(\"accessToken\", newAccessToken);",
-									"}"
+									"    console.log('Set new access token');",
+									"    pm.collectionVariables.set(\"accessToken\", newAccessToken);",
+									"}",
+									"pm.test(\"Response status code is 200\", function () {",
+									"  pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -399,7 +1074,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"title\": \"A post title\",\n    \"body\": \"Some HTML text Some HTML text Some HTML text Some HTML text Some HTML text Some HTML text Some HTML text Some HTML text Some HTML text Some HTML text Some HTML text Some HTML text Some HTML text Some HTML text\"\n}",
+							"raw": "",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -407,14 +1082,14 @@
 							}
 						},
 						"url": {
-							"raw": "{{endpoint}}/api/products/{{productId}}",
+							"raw": "{{endpoint}}/api/notifications/{{notificationId}}",
 							"host": [
 								"{{endpoint}}"
 							],
 							"path": [
 								"api",
-								"products",
-								"{{productId}}"
+								"notifications",
+								"{{notificationId}}"
 							]
 						}
 					},
@@ -445,6 +1120,87 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "oauth",
+			"item": [
+				{
+					"name": "facebook",
+					"protocolProfileBehavior": {
+						"followAuthorizationHeader": false,
+						"followRedirects": false
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-refresh",
+								"value": "{{refreshToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{endpoint}}/api/oauth/facebook",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"oauth",
+								"facebook"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "healthcheck",
+			"protocolProfileBehavior": {
+				"followAuthorizationHeader": false,
+				"followRedirects": false
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-refresh",
+						"value": "{{refreshToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{endpoint}}/healthcheck",
+					"host": [
+						"{{endpoint}}"
+					],
+					"path": [
+						"healthcheck"
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"auth": {
@@ -472,7 +1228,12 @@
 			"script": {
 				"type": "text/javascript",
 				"exec": [
-					""
+					"const newAccessToken = pm.response.headers.get('x-access-token');",
+					"",
+					"if(newAccessToken){",
+					"    console.log('Set new access token');",
+					"    pm.collectionVariables.set(\"accessToken\", newAccessToken);",
+					"}"
 				]
 			}
 		}
@@ -491,20 +1252,27 @@
 			"value": "Jane Doe"
 		},
 		{
+			"key": "endpoint",
+			"value": "https://noted-basically-krill.ngrok-free.app"
+		},
+		{
+			"key": "offerId",
+			"value": "-offerId-"
+		},
+		{
 			"key": "accessToken",
-			"value": "<accessToken will be set when you create a session>"
+			"value": "-accessToken-",
+			"type": "string"
 		},
 		{
 			"key": "refreshToken",
-			"value": "<refreshToken will be set when you create a session>"
+			"value": "-refreshToken-",
+			"type": "string"
 		},
 		{
-			"key": "endpoint",
-			"value": "http://localhost:1337"
-		},
-		{
-			"key": "productId",
-			"value": "<productId will be set when you create a session>"
+			"key": "notificationId",
+			"value": "-notificationId-",
+			"type": "string"
 		}
 	]
 }
