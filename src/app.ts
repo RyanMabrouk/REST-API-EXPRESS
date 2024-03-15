@@ -16,6 +16,7 @@ const app = express();
 
 app.use(express.json());
 
+// Routes Auth
 app.use(deserializeUser);
 
 app.use(
@@ -35,12 +36,8 @@ app.use(
 
 app.listen(port, async () => {
   logger.info(`App is running at http://localhost:${port}`);
-
   await connect();
-
   routes(app);
-
   startMetricsServer();
-
   swaggerDocs(app, port);
 });

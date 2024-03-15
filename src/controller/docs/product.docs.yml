@@ -1,0 +1,177 @@
+tags:
+  title: offer API
+paths:
+  /Offers:
+    post:
+      summary: Create a new offer
+      description: This endpoint creates a new offer.
+      tags:
+        - offer API
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: The offer's title.
+                description:
+                  type: string
+                  description: The offer's description.
+                  minLength: 120
+                price:
+                  type: number
+                  description: The offer's price.
+                image:
+                  type: string
+                  description: The offer's image.
+              required:
+                - title
+                - description
+                - price
+                - image
+      responses:
+        "200":
+          description: A offer was successfully created.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                  title:
+                    type: string
+                  description:
+                    type: string
+                  price:
+                    type: number
+                  image:
+                    type: string
+        "403":
+          description: The user is not authorized to access this resource.
+  /Offers/{OfferId}:
+    get:
+      summary: Get a offer
+      description: This endpoint returns a offer by its ID.
+      tags:
+        - offer API
+      parameters:
+        - in: path
+          name: OfferId
+          schema:
+            type: string
+          required: true
+          description: The offer ID.
+      responses:
+        "200":
+          description: A offer was successfully retrieved.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                  title:
+                    type: string
+                  description:
+                    type: string
+                  price:
+                    type: number
+                  image:
+                    type: string
+        "404":
+          description: A offer with the specified ID was not found.
+    put:
+      summary: Update a offer
+      description: This endpoint updates a offer by its ID.
+      tags:
+        - offer API
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: OfferId
+          schema:
+            type: string
+          required: true
+          description: The offer ID.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: The offer's title.
+                description:
+                  type: string
+                  description: The offer's description.
+                  minLength: 120
+                price:
+                  type: number
+                  description: The offer's price.
+                image:
+                  type: string
+                  description: The offer's image.
+              required:
+                - title
+                - description
+                - price
+                - image
+      responses:
+        "200":
+          description: The offer was successfully updated.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                  title:
+                    type: string
+                  description:
+                    type: string
+                  price:
+                    type: number
+                  image:
+                    type: string
+        "403":
+          description: The user is not authorized to access this resource.
+        "404":
+          description: A offer with the specified ID was not found.
+    delete:
+      summary: Delete a offer
+      description: This endpoint deletes a offer by its ID.
+      tags:
+        - offer API
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: OfferId
+          schema:
+            type: string
+          required: true
+          description: The offer ID.
+      responses:
+        "200":
+          description: The offer was successfully deleted.
+        "403":
+          description: The user is not authorized to access this resource.
+        "404":
+          description: A offer with the specified ID was not found.
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

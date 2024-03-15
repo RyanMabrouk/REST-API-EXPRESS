@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import config from "config";
 import {
   createSession,
-  findSessions,
+  findSession,
   updateSession,
 } from "../service/session.service";
 import { validatePassword } from "../service/user.service";
@@ -13,7 +13,9 @@ export async function createUserSessionHandler(req: Request, res: Response) {
   const user = await validatePassword(req.body);
 
   if (!user) {
-    return res.status(401).send("Invalid email or password");
+    return res
+      .status(401)
+      .send({ status: "error", message: "Invalid email or password" });
   }
 
   // create a session
@@ -39,21 +41,17 @@ export async function createUserSessionHandler(req: Request, res: Response) {
   return res.send({ accessToken, refreshToken });
 }
 
-export async function getUserSessionsHandler(req: Request, res: Response) {
-  const userId = res.locals.user._id;
-
-  const sessions = await findSessions({ user: userId, valid: true });
-
-  return res.send(sessions);
-}
-
 export async function deleteSessionHandler(req: Request, res: Response) {
   const sessionId = res.locals.user.session;
-
   await updateSession({ _id: sessionId }, { valid: false });
-
   return res.send({
     accessToken: null,
     refreshToken: null,
   });
+}
+
+export async function getUserSessionHandler(req: Request, res: Response) {
+  const sessionId = res.locals.user.session;
+  const session = await findSession({ _id: sessionId, valid: true });
+  return res.send({ data: session, status: "success" });
 }

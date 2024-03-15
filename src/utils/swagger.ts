@@ -2,13 +2,18 @@ import { Express, Request, Response } from "express";
 import swaggerJsdoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 import { version } from "../../package.json";
-import log from "./logger";
+import logger from "./logger";
 
 const options: swaggerJsdoc.Options = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "REST API Docs",
+      title: "RAYES REST API Docs",
+      description: "API Documentation for RAYES REST API :)",
+      contact: {
+        name: "Rayes",
+        email: "mabroukr999@gmail.com",
+      },
       version,
     },
     components: {
@@ -26,7 +31,7 @@ const options: swaggerJsdoc.Options = {
       },
     ],
   },
-  apis: ["./src/routes.ts", "./src/schema/*.ts"],
+  apis: ["./src/controller/*.yml", "./src/schema/*.yml"],
 };
 
 const swaggerSpec = swaggerJsdoc(options);
@@ -41,7 +46,7 @@ function swaggerDocs(app: Express, port: number) {
     res.send(swaggerSpec);
   });
 
-  log.info(`Docs available at http://localhost:${port}/docs`);
+  logger.info(`Docs available at http://localhost:${port}/docs`);
 }
 
 export default swaggerDocs;

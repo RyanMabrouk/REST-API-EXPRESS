@@ -6,6 +6,16 @@ export interface UserInput {
   email: string;
   name: string;
   password: string;
+  avatar: string | null;
+  bio: string | null;
+  birthdate: Date | null;
+  location: string | null;
+  languages: string[] | null;
+  niche: string[] | null;
+  verified: boolean;
+  topPick: boolean;
+  haveVideo: boolean;
+  creator: boolean;
 }
 
 export interface UserDocument extends UserInput, mongoose.Document {
@@ -19,6 +29,16 @@ const userSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true },
     name: { type: String, required: true },
     password: { type: String, required: true },
+    avatar: { type: String, default: null },
+    bio: { type: String, default: null },
+    birthdate: { type: Date, default: null },
+    location: { type: String, default: null },
+    languages: { type: [String], default: null },
+    niche: { type: [String], default: null },
+    verified: { type: Boolean, default: false },
+    topPick: { type: Boolean, default: false },
+    haveVideo: { type: Boolean, default: false },
+    creator: { type: Boolean, default: false },
   },
   {
     timestamps: true,
@@ -27,17 +47,12 @@ const userSchema = new mongoose.Schema(
 
 userSchema.pre("save", async function (next) {
   let user = this as UserDocument;
-
   if (!user.isModified("password")) {
     return next();
   }
-
   const salt = await bcrypt.genSalt(config.get<number>("saltWorkFactor"));
-
   const hash = await bcrypt.hashSync(user.password, salt);
-
   user.password = hash;
-
   return next();
 });
 

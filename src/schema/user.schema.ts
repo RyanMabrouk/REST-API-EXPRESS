@@ -1,65 +1,104 @@
-import { object, string, TypeOf } from "zod";
-
-/**
- * @openapi
- * components:
- *  schemas:
- *    CreateUserInput:
- *      type: object
- *      required:
- *        - email
- *        - name
- *        - password
- *        - passwordConfirmation
- *      properties:
- *        email:
- *          type: string
- *          default: jane.doe@example.com
- *        name:
- *          type: string
- *          default: Jane Doe
- *        password:
- *          type: string
- *          default: stringPassword123
- *        passwordConfirmation:
- *          type: string
- *          default: stringPassword123
- *    CreateUserResponse:
- *      type: object
- *      properties:
- *        email:
- *          type: string
- *        name:
- *          type: string
- *        _id:
- *          type: string
- *        createdAt:
- *          type: string
- *        updatedAt:
- *          type: string
- */
-
-export const createUserSchema = object({
-  body: object({
-    name: string({
-      required_error: "Name is required",
-    }),
-    password: string({
-      required_error: "Password is required",
-    }).min(6, "Password too short - should be 6 chars minimum"),
-    passwordConfirmation: string({
-      required_error: "passwordConfirmation is required",
-    }),
-    email: string({
-      required_error: "Email is required",
-    }).email("Not a valid email"),
-  }).refine((data) => data.password === data.passwordConfirmation, {
-    message: "Passwords do not match",
-    path: ["passwordConfirmation"],
-  }),
+import { z } from "zod";
+export const createUserSchema = z.object({
+  body: z
+    .object({
+      name: z.string({
+        required_error: "Name is required",
+      }),
+      password: z
+        .string({
+          required_error: "Password is required",
+        })
+        .min(6, "Password too short - should be 6 chars minimum"),
+      passwordConfirmation: z.string({
+        required_error: "passwordConfirmation is required",
+      }),
+      email: z
+        .string({
+          required_error: "Email is required",
+        })
+        .email("Not a valid email"),
+      birthdate: z
+        .string()
+        .optional()
+        .nullable()
+        .default(() => null),
+      bio: z
+        .string()
+        .optional()
+        .nullable()
+        .default(() => null),
+      avatar: z
+        .string()
+        .optional()
+        .nullable()
+        .default(() => null),
+      location: z
+        .string()
+        .optional()
+        .nullable()
+        .default(() => null),
+      languages: z
+        .array(z.string())
+        .optional()
+        .nullable()
+        .default(() => null),
+      niche: z
+        .array(z.string())
+        .optional()
+        .nullable()
+        .default(() => null),
+      verified: z
+        .boolean()
+        .optional()
+        .default(() => false),
+      topPick: z
+        .boolean()
+        .optional()
+        .default(() => false),
+      haveVideo: z
+        .boolean()
+        .optional()
+        .default(() => false),
+      creator: z
+        .boolean()
+        .optional()
+        .default(() => false),
+    })
+    .refine((data) => data.password === data.passwordConfirmation, {
+      message: "Passwords do not match",
+      path: ["passwordConfirmation"],
+    })
+    .refine(
+      (data) =>
+        (data.birthdate && !isNaN(new Date(data.birthdate).getTime())) ||
+        !data.birthdate,
+      {
+        message: "Birthdate must be a valid date",
+        path: ["birthdate"],
+      }
+    )
+    .refine(
+      (data) =>
+        (data.birthdate && new Date(data.birthdate) < new Date()) ||
+        !data.birthdate,
+      {
+        message: "Birthdate must be in the past",
+        path: ["birthdate"],
+      }
+    )
+    .refine(
+      (data) =>
+        (data.birthdate && new Date(data.birthdate) > new Date("1900-01-01")) ||
+        !data.birthdate,
+      {
+        message: "Birthdate must after 1900/01/01",
+        path: ["birthdate"],
+      }
+    ),
 });
 
 export type CreateUserInput = Omit<
-  TypeOf<typeof createUserSchema>,
+  z.TypeOf<typeof createUserSchema>,
   "body.passwordConfirmation"
 >;

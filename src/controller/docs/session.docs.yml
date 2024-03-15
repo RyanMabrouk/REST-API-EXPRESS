@@ -1,0 +1,133 @@
+tags:
+  title: Session API
+paths:
+  /sessions:
+    get:
+      summary: Get user sessions
+      description: This endpoint returns all valid sessions for the current user.
+      tags:
+        - Session API
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: A list of sessions was successfully retrieved.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Session"
+        "403":
+          description: The user is not authorized to access this resource.
+    delete:
+      summary: Delete current user session
+      description: This endpoint invalidates the current user session.
+      tags:
+        - Session API
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: The session was successfully invalidated.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    nullable: true
+                  refreshToken:
+                    type: string
+                    nullable: true
+        "403":
+          description: The user is not authorized to access this resource.
+    post:
+      summary: Create a new user session
+      description: This endpoint creates a new user session and returns an access token and a refresh token.
+      tags:
+        - Session API
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: The user's email.
+                  format: email
+                password:
+                  type: string
+                  description: The user's password.
+              required:
+                - email
+                - password
+      responses:
+        "200":
+          description: A user session was successfully created.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    description: The access token for the session.
+                  refreshToken:
+                    type: string
+                    description: The refresh token for the session.
+        "400":
+          description: Invalid request body. The body must be a JSON object with 'email' and 'password' properties.
+        "401":
+          description: Invalid email or password.
+  /sessions/all:
+    delete:
+      summary: Delete all sessions for the current user
+      description: This endpoint invalidates all sessions for the current user.
+      tags:
+        - Session API
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: All sessions were successfully invalidated.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    nullable: true
+                  refreshToken:
+                    type: string
+                    nullable: true
+        "403":
+          description: The user is not authorized to access this resource.
+components:
+  schemas:
+    Session:
+      type: object
+      properties:
+        _id:
+          type: string
+        user:
+          type: string
+        valid:
+          type: boolean
+        userAgent:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
